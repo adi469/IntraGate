@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied | {{ portal.org_name | default('IntraGate') if portal else 'IntraGate' }}{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-header forbidden">
+            <i class="fa-solid fa-ban"></i>
+        </div>
+        <div class="error-body">
+            <h2>403 — Access Forbidden</h2>
+            <p class="error-desc">You are not authorized to view the application <strong>{{ app_name }}</strong>.</p>
+            <div class="error-reasons">
+                <p>This security gate is active because:</p>
+                <ul>
+                    <li><i class="fa-solid fa-circle-xmark"></i> Your Entra ID account does not have access permissions.</li>
+                    <li><i class="fa-solid fa-circle-xmark"></i> You are trying to bypass the primary portal authentication.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="error-footer">
+            <a href="/" class="btn btn-primary">
+                <i class="fa-solid fa-house"></i> Return to Portal
+            </a>
+            <a href="/auth/logout" class="btn btn-outline">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

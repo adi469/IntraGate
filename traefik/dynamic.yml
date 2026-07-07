@@ -1,0 +1,17 @@
+http:
+  routers:
+    # Route all traffic to domain ai.intragate.net to the gateway application
+    gateway:
+      rule: "Host(`ai.intragate.net`)"
+      entryPoints: ["websecure"]
+      service: gateway
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    # Target service is the secure gateway running on port 9000
+    gateway:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:9000"
+        passHostHeader: true

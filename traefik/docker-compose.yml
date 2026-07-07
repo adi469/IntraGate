@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: intragate-ssl-proxy
+    restart: always
+    command:
+      - "--api.dashboard=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@intragate.net"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      # Enable Docker integration provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - intragate-net
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: intragate-gateway
+    restart: always
+    environment:
+      - AZURE_TENANT_ID
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+      - GATEWAY_HOST
+      - GATEWAY_PORT
+      - GATEWAY_SECRET_KEY
+      - GATEWAY_BASE_URL
+      - SESSION_LIFETIME_HOURS
+      - GROUP_DISPATCH
+      - GROUP_ASSEMBLY
+      - GROUP_QUALITY
+      - GROUP_VMC
+      - DISPATCH_UPSTREAM
+      - ASSEMBLY_UPSTREAM
+      - QUALITY_UPSTREAM
+      - VMC_UPSTREAM
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`ai.intragate.net`)"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gateway.loadbalancer.server.port=9000"
+    networks:
+      - intragate-net
+
+networks:
+  intragate-net:
+    external: true

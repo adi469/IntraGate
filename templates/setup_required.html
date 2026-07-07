@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Setup Required{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-header generic">
+            <i class="fa-solid fa-gear" style="color: var(--primary-color, #1f6b9a);"></i>
+        </div>
+        <div class="error-body">
+            <h2>Gateway Setup Required</h2>
+            <p class="error-desc">
+                This gateway has not been configured yet. An administrator needs to complete
+                the initial setup before users can access applications.
+            </p>
+            <div class="error-reasons">
+                <p>What needs to be configured:</p>
+                <ul>
+                    <li><i class="fa-brands fa-microsoft"></i> Microsoft Entra ID connection</li>
+                    <li><i class="fa-solid fa-cubes"></i> Application definitions</li>
+                    <li><i class="fa-solid fa-gear"></i> Gateway base URL & session settings</li>
+                </ul>
+            </div>
+        </div>
+        <div class="error-footer">
+            <a href="/auth/login" class="btn btn-primary">
+                <i class="fa-solid fa-rotate-right"></i> Try Again
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

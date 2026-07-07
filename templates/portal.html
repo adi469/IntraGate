@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Application Portal | {{ portal.org_name | default('Gateway') if portal else 'Gateway' }}{% endblock %}
+
+{% block content %}
+<div class="portal-container">
+    <div class="portal-intro">
+        <h1>Welcome back, <span class="highlight">{{ user.name.split()[0] }}</span></h1>
+        <p>Select an authorized application below to launch your session.</p>
+    </div>
+
+    {% if apps %}
+        <div class="apps-grid">
+            {% for app in apps %}
+                <div class="app-card" style="--accent-gradient: {{ app.gradient }};">
+                    <div class="app-card-header">
+                        <div class="app-icon-wrapper">
+                            <span class="app-icon">{{ app.icon }}</span>
+                        </div>
+                        <span class="app-badge-pill">Authorized</span>
+                    </div>
+                    <div class="app-card-body">
+                        <h3>{{ app.name }}</h3>
+                        <p>{{ app.description }}</p>
+                    </div>
+                    <div class="app-card-footer">
+                        <a href="/app/{{ app.slug }}/" class="btn btn-primary btn-block">
+                            Launch Application <i class="fa-solid fa-circle-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2>Access Restrictions Active</h2>
+            <p>Your Microsoft 365 account does not currently belong to any of the required Entra Security Groups.</p>
+            <p class="sub-message">If you need access, please contact your IT Administrator to request group membership.</p>
+            <div class="empty-footer">
+                <a href="/auth/logout" class="btn btn-outline">
+                    <i class="fa-solid fa-user-xmark"></i> Switch M365 Account
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
