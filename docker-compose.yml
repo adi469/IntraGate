@@ -29,7 +29,7 @@ services:
       # Reached via: SSH tunnel (ssh -L 8585:127.0.0.1:8585 user@host) or Traefik IP-allowlist.
       - "127.0.0.1:8585:8585"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD}@database:5432/intragate_gateway
+      - DATABASE_URL=${DATABASE_URL}
       - GATEWAY_SECRET_KEY=${GATEWAY_SECRET_KEY}
       - GATEWAY_ENCRYPTION_KEY=${GATEWAY_ENCRYPTION_KEY}
       - GATEWAY_HOST=0.0.0.0
