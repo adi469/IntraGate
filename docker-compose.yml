@@ -1,5 +1,5 @@
 services:
-  database:
+  intragateDB:
     image: postgres:15-alpine
     container_name: gateway-db
     restart: unless-stopped
@@ -37,7 +37,7 @@ services:
       - ADMIN_PORT=${ADMIN_PORT:-8585}
       - TRUSTED_PROXIES=${TRUSTED_PROXIES}
     depends_on:
-      database:
+      intragateDB:
         condition: service_healthy
     volumes:
       - uploads-data:/app/data/uploads
