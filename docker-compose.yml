@@ -24,17 +24,17 @@ services:
     container_name: intragate-gateway
     restart: unless-stopped
     ports:
-      - "9090:9000"  # User Portal: mapped to 9090 to avoid conflict with Portainer on 9000
+      - "${HOST_PORT:-9090}:${GATEWAY_PORT:-9000}"  # User Portal
       # Admin Panel is bound strictly to localhost (127.0.0.1) for security.
       # Reached via: SSH tunnel (ssh -L 8585:127.0.0.1:8585 user@host) or Traefik IP-allowlist.
-      - "127.0.0.1:8585:8585"
+      - "127.0.0.1:${ADMIN_PORT:-8585}:${ADMIN_PORT:-8585}"
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - GATEWAY_SECRET_KEY=${GATEWAY_SECRET_KEY}
       - GATEWAY_ENCRYPTION_KEY=${GATEWAY_ENCRYPTION_KEY}
-      - GATEWAY_HOST=0.0.0.0
-      - GATEWAY_PORT=9000
-      - ADMIN_PORT=8585
+      - GATEWAY_HOST=${GATEWAY_HOST:-0.0.0.0}
+      - GATEWAY_PORT=${GATEWAY_PORT:-9000}
+      - ADMIN_PORT=${ADMIN_PORT:-8585}
       - TRUSTED_PROXIES=${TRUSTED_PROXIES}
     depends_on:
       database:
