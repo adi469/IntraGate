@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntraGate Documentation — Secure SSO & Reverse Proxy Gateway</title>
+    <meta name="description" content="Official documentation for IntraGate - The secure, distributed reverse proxy with Entra ID SSO integration, encrypted database-backed sessions, and advanced admin security controls.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --sidebar-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.15);
+            --accent: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --border: rgba(255, 255, 255, 0.08);
+            --code-bg: #090d16;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        /* ── Scrollbar ────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--card-bg);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        /* ── Sidebar Layout ────────────────────────────────────── */
+        aside {
+            width: 300px;
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .brand-name {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--text-color);
+            letter-spacing: -0.5px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            fill: var(--text-muted);
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+        }
+
+        .nav-group {
+            margin-bottom: 24px;
+        }
+
+        .nav-group-title {
+            font-family: var(--font-display);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 4px;
+        }
+
+        .nav-links a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .nav-links a.active {
+            color: white;
+            background: linear-gradient(90deg, var(--primary-glow), transparent);
+            border-left: 3px solid var(--primary);
+            padding-left: 9px;
+            font-weight: 600;
+        }
+
+        /* ── Main Panel Layout ────────────────────────────────── */
+        main {
+            margin-left: 300px;
+            width: calc(100% - 300px);
+            min-height: 100vh;
+            padding: 64px 80px;
+            max-width: 1100px;
+        }
+
+        section {
+            margin-bottom: 64px;
+            scroll-margin-top: 64px;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 48px;
+            color: #e2e8f0;
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            margin-top: 32px;
+            color: #f1f5f9;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        strong {
+            color: var(--text-color);
+        }
+
+        /* ── Interactive Component: Tabs ─────────────────────── */
+        .tab-container {
+            margin: 24px 0;
+            background-color: var(--sidebar-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .tab-headers {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ── Code Blocks with Copy ───────────────────────────── */
+        .code-wrapper {
+            position: relative;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s ease;
+            outline: none;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-color);
+        }
+
+        pre {
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        /* Inline code */
+        p code, li code {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        /* ── Callout Alerts ──────────────────────────────────── */
+        .callout {
+            border-left: 4px solid var(--primary);
+            background-color: rgba(59, 130, 246, 0.05);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 24px 0;
+        }
+
+        .callout-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .callout.info {
+            border-left-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.03);
+            color: #93c5fd;
+        }
+        .callout.info .callout-title { color: #60a5fa; }
+
+        .callout.warning {
+            border-left-color: var(--warning);
+            background-color: rgba(245, 158, 11, 0.03);
+            color: #fde047;
+        }
+        .callout.warning .callout-title { color: #fbbf24; }
+
+        .callout.danger {
+            border-left-color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.03);
+            color: #fca5a5;
+        }
+        .callout.danger .callout-title { color: #f87171; }
+
+        /* ── Variable Tables ─────────────────────────────────── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: var(--sidebar-bg);
+            color: var(--text-color);
+            font-family: var(--font-display);
+            font-weight: 700;
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        /* ── Lists ───────────────────────────────────────────── */
+        ul, ol {
+            margin-bottom: 16px;
+            padding-left: 24px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* ── Responsive adjustments ──────────────────────────── */
+        @media (max-width: 900px) {
+            aside {
+                display: none; /* Mobile Drawer required later */
+            }
+            main {
+                margin-left: 0;
+                width: 100%;
+                padding: 40px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Sidebar Navigation ────────────────────────────────────── -->
+    <aside id="sidebar">
+        <a href="#intro" class="brand">
+            <div class="brand-logo">IG</div>
+            <span class="brand-name">IntraGate</span>
+        </a>
+
+        <div class="search-box">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" id="docSearch" placeholder="Search docs..." onkeyup="filterDocs()">
+        </div>
+
+        <nav>
+            <div class="nav-group">
+                <div class="nav-group-title">Getting Started</div>
+                <ul class="nav-links">
+                    <li><a href="#intro" class="nav-link active">Overview & Architecture</a></li>
+                    <li><a href="#deploy" class="nav-link">Deployment Guide</a></li>
+                    <li><a href="#admin-access" class="nav-link">Admin Panel Access</a></li>
+                    <li><a href="#env-ref" class="nav-link">Environment Reference</a></li>
+                </ul>
+            </div>
+            
+            <div class="nav-group">
+                <div class="nav-group-title">How It Works</div>
+                <ul class="nav-links">
+                    <li><a href="#sessions" class="nav-link">Session Management</a></li>
+                    <li><a href="#proxy-rules" class="nav-link">Reverse Proxy Policy</a></li>
+                    <li><a href="#admin-sec" class="nav-link">Admin Security Controls</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">Operations & Admin</div>
+                <ul class="nav-links">
+                    <li><a href="#admin-features" class="nav-link">Admin Features & Tweaks</a></li>
+                    <li><a href="#entra-setup" class="nav-link">Entra ID SSO Setup</a></li>
+                    <li><a href="#troubleshooting" class="nav-link">Troubleshooting & FAQ</a></li>
+                </ul>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- ── Main Content Area ───────────────────────────────────── -->
+    <main>
+        
+        <!-- ── Overview Section ────────────────────────────────── -->
+        <section id="intro">
+            <h1>IntraGate Architecture</h1>
+            <p><strong>IntraGate</strong> is an enterprise-grade Single Sign-On (SSO) and Reverse Proxy Gateway. It intercepts requests bound for internal applications and enforces OAuth2 authorization using Microsoft Entra ID (OIDC), keeping access completely centralized, secure, and audit-logged.</p>
+            
+            <div class="callout info">
+                <div class="callout-title">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                    Design Principle
+                </div>
+                IntraGate is engineered with zero hardcoded credentials and absolute separation of concern. All secrets are derived strictly from environment variables at startup, and session tokens are encrypted symmetrically using AES Fernet at rest.
+            </div>
+
+            <h2>System Architecture</h2>
+            <p>IntraGate is split into two primary components running concurrently in the same runtime:</p>
+            <ul>
+                <li><strong>User Portal & Reverse Proxy</strong>: Serves user requests on port <code>9000</code>. Validates user sessions and handles low-latency proxy forwarding to registered internal microservices.</li>
+                <li><strong>Admin Panel</strong>: Runs on port <code>8585</code>, strictly bound to localhost (<code>127.0.0.1</code>) to prevent direct internet exposure. Features local administrator auth, TOTP Multi-Factor Authentication, configuration registry, and CSV/PDF audit log exports.</li>
+            </ul>
+
+            <h3>Data Flow Overview</h3>
+            <div class="code-wrapper">
+                <div class="code-header">Request Authentication & Forwarding Sequence</div>
+                <pre><code>Client Request -> IntraGate (Port 9000)
+    │
+    ├── [1] Check Session Cookie (intragate_sid)
+    │     ├── Missing/Expired -> Redirect to Microsoft Entra ID Login
+    │     └── Active -> Validate in Postgres Session Table & Decrypt Tokens
+    │
+    ├── [2] Audit Log Extraction (Trusted Proxy Check & IP Sanity)
+    │
+    ├── [3] Sanitization (Strip incoming X-Gateway-User-* & session cookies)
+    │
+    └── [4] Forward Request with Identity headers to Upstream app</code></pre>
+            </div>
+        </section>
+
+        <!-- ── Deployment Section ──────────────────────────────── -->
+        <section id="deploy">
+            <h1>Deployment Guide</h1>
+            <p>IntraGate is fully containerized and easily deployed using Docker and Docker Compose. We provide automated database migrations and configuration validation out-of-the-box.</p>
+
+            <div class="tab-container">
+                <div class="tab-headers">
+                    <button class="tab-btn active" onclick="switchTab(event, 'docker-tab')">Docker Compose (Recommended)</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'native-tab')">Native Run</button>
+                </div>
+
+                <!-- Docker Tab -->
+                <div id="docker-tab" class="tab-content active">
+                    <p>To deploy using Docker Compose, create a directory and write the following <code>docker-compose.yml</code> file:</p>
+                    
+                    <div class="code-wrapper">
+                        <div class="code-header">docker-compose.yml <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code>version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: intragate-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: intragate_gateway
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - gateway-network
+
+  gateway:
+    image: intragate:latest
+    build: .
+    container_name: intragate-service
+    restart: unless-stopped
+    ports:
+      - "9090:9000"           # User Portal exposed publically
+      - "127.0.0.1:8585:8585" # Admin Panel bound to localhost only
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD}@database:5432/intragate_gateway
+      - GATEWAY_SECRET_KEY=${GATEWAY_SECRET_KEY}
+      - GATEWAY_ENCRYPTION_KEY=${GATEWAY_ENCRYPTION_KEY}
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=9000
+      - ADMIN_PORT=8585
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES}
+    depends_on:
+      - database
+    volumes:
+      - uploads-data:/app/data/uploads
+      - .env:/app/.env
+    networks:
+      - gateway-network
+
+volumes:
+  db-data:
+  uploads-data:
+
+networks:
+  gateway-network:
+    driver: bridge</code></pre>
+                    </div>
+
+                    <p>Create a <code>.env</code> file in the same directory containing your deployment secrets. See the <a href="#env-ref">Environment Reference</a> for generation guidelines.</p>
+                    
+                    <div class="code-wrapper">
+                        <div class="code-header">Start Command <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code>docker-compose up -d --build</code></pre>
+                    </div>
+                </div>
+
+                <!-- Native Tab -->
+                <div id="native-tab" class="tab-content">
+                    <p>For native local development, install python requirements and expose parameters locally.</p>
+                    
+                    <div class="code-wrapper">
+                        <div class="code-header">System Setup <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code># Install required system packages
+pip install -r requirements.txt
+
+# Export environment variables
+export POSTGRES_PASSWORD="YourDbPassword"
+export GATEWAY_SECRET_KEY="32-byte-hex-session-signing-secret"
+export GATEWAY_ENCRYPTION_KEY="32-byte-url-safe-base64-fernet-key"
+export DATABASE_URL="postgresql+asyncpg://postgres:${POSTGRES_PASSWORD}@localhost:5432/intragate_gateway"
+
+# Run migrations and start app
+python run.py</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Admin Panel Access ──────────────────────────────── -->
+        <section id="admin-access">
+            <h1>Admin Panel Access</h1>
+            <p>To prevent malicious threat actors, automated scanners, or brute-force bots from querying or attacking the management endpoints, the IntraGate Admin Panel binds exclusively to <code>127.0.0.1:8585</code> (localhost). This means it does not listen on any public network interface on the server. Below are the detailed procedures for administrators to access this secure interface.</p>
+
+            <h2>Understanding the Loopback Bind</h2>
+            <p>When running IntraGate via Docker Compose, the service binds using the port mapping <code>127.0.0.1:8585:8585</code>. This maps port <code>8585</code> of the container to port <code>8585</code> of the host server's local loopback interface (<code>127.0.0.1</code>). Even if the host server has a public IP address (e.g., <code>203.0.113.10</code>), the admin port is completely inaccessible from the outside network.</p>
+            
+            <div class="callout warning">
+                <div class="callout-title">Verify Loopback Bind on Server</div>
+                To verify that the admin port is restricted only to the loopback interface on your hosting server, run the following command as root/sudo:
+                <pre><code>ss -tulpn | grep 8585</code></pre>
+                The output should show:
+                <pre><code>LISTEN  0  512  127.0.0.1:8585  0.0.0.0:*</code></pre>
+                If it shows <code>*:8585</code> or <code>0.0.0.0:8585</code>, the port is exposed publicly and you must adjust your docker-compose file or system firewall rule immediately.
+            </div>
+
+            <h2>Method 1: SSH Port Forwarding (Recommended)</h2>
+            <p>SSH port forwarding (SSH tunneling) creates an encrypted secure channel from your local administrator workstation to the hosting server. All traffic is tunneled through the SSH connection.</p>
+            
+            <div class="tab-container">
+                <div class="tab-headers">
+                    <button class="tab-btn active" onclick="switchTab(event, 'tunnel-linux-tab')">Linux / macOS / Windows CMD</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tunnel-putty-tab')">PuTTY (GUI)</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'tunnel-moba-tab')">MobaXterm</button>
+                </div>
+
+                <!-- Linux / macOS Tab -->
+                <div id="tunnel-linux-tab" class="tab-content active">
+                    <p>Open a terminal (or Command Prompt / PowerShell on Windows) and run the following command:</p>
+                    <div class="code-wrapper">
+                        <div class="code-header">SSH Tunnel Command <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code>ssh -L 8585:127.0.0.1:8585 -N -f username@your-server-ip</code></pre>
+                    </div>
+                    <h4>Parameters Explained:</h4>
+                    <ul>
+                        <li><code>-L 8585:127.0.0.1:8585</code>: Directs SSH to listen on port <code>8585</code> on your local workstation and forward it to <code>127.0.0.1:8585</code> on the remote server host.</li>
+                        <li><code>-N</code>: Tells SSH not to execute any remote command. This is useful when only forwarding ports.</li>
+                        <li><code>-f</code>: Backgrounds the SSH process once authentication is completed.</li>
+                    </ul>
+                    <p>Once authenticated, open your web browser on your local workstation and navigate to <strong><code>http://127.0.0.1:8585</code></strong>.</p>
+                </div>
+
+                <!-- PuTTY Tab -->
+                <div id="tunnel-putty-tab" class="tab-content">
+                    <p>If you use PuTTY on Windows, configure port forwarding as follows:</p>
+                    <ol>
+                        <li>Open PuTTY and input your server's host name or IP address in the <strong>Session</strong> panel.</li>
+                        <li>In the left tree view, navigate to <strong>Connection</strong> -> <strong>SSH</strong> -> <strong>Tunnels</strong>.</li>
+                        <li>In the <strong>Port forwarding</strong> configuration fields:
+                            <ul>
+                                <li><strong>Source port</strong>: Input <code>8585</code> (your local workstation port).</li>
+                                <li><strong>Destination</strong>: Input <code>127.0.0.1:8585</code> (the server's local loopback port).</li>
+                                <li>Ensure the radio buttons are set to <strong>Local</strong> and <strong>Auto</strong>.</li>
+                            </ul>
+                        </li>
+                        <li>Click the <strong>Add</strong> button. You should see <code>L8585 127.0.0.1:8585</code> listed in the *Forwarded ports* list box.</li>
+                        <li>Go back to the <strong>Session</strong> screen, save your session, and click <strong>Open</strong> to log in.</li>
+                        <li>Keep the PuTTY terminal window open. In your local web browser, visit <strong><code>http://127.0.0.1:8585</code></strong>.</li>
+                    </ol>
+                </div>
+
+                <!-- MobaXterm Tab -->
+                <div id="tunnel-moba-tab" class="tab-content">
+                    <p>If you use MobaXterm, use the graphical Tunneling tool:</p>
+                    <ol>
+                        <li>Click the <strong>Tunneling</strong> button in the top menu bar.</li>
+                        <li>Click <strong>New SSH tunnel</strong>.</li>
+                        <li>Configure the tunnel settings:
+                            <ul>
+                                <li><strong>Forwarded port (local)</strong>: Input <code>8585</code>.</li>
+                                <li><strong>SSH Server</strong>: Input your server IP address and SSH username/port.</li>
+                                <li><strong>Destination server (remote)</strong>: Input <code>127.0.0.1</code> and Port <code>8585</code>.</li>
+                            </ul>
+                        </li>
+                        <li>Save the settings, then click the **Start** (play) icon next to the created tunnel.</li>
+                        <li>Open your local browser and navigate to <strong><code>http://127.0.0.1:8585</code></strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <h2>Method 2: Reverse Proxy (Traefik or Nginx) with CIDR IP Whitelist</h2>
+            <p>If your organization requires accessing the admin panel directly via an HTTPS domain (e.g. <code>admin.intragate.dev</code>) without creating SSH tunnels, you must place a reverse proxy in front of the localhost binding and protect the route using an IP Allowlist middleware to prevent unauthorized public access.</p>
+
+            <div class="tab-container">
+                <div class="tab-headers">
+                    <button class="tab-btn active" onclick="switchTab(event, 'traefik-proxy-tab')">Traefik Router Rules</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'nginx-proxy-tab')">NGINX Host block</button>
+                </div>
+
+                <!-- Traefik Tab -->
+                <div id="traefik-proxy-tab" class="tab-content active">
+                    <p>Write a Traefik HTTP router configuration incorporating the <code>ipAllowList</code> middleware:</p>
+                    <div class="code-wrapper">
+                        <div class="code-header">dynamic_config.yml <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code>http:
+  routers:
+    intragate-admin:
+      rule: "Host(`admin.intragate.dev`)"
+      service: admin-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: myresolver
+      middlewares:
+        - admin-ip-whitelist
+
+  middlewares:
+    admin-ip-whitelist:
+      ipAllowList:
+        sourceRange:
+          - "192.168.1.0/24"      # Corporate office subnet
+          - "203.0.113.50/32"     # Admin remote home IP (static)
+
+  services:
+    admin-service:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8585"</code></pre>
+                    </div>
+                </div>
+
+                <!-- Nginx Tab -->
+                <div id="nginx-proxy-tab" class="tab-content">
+                    <p>Write an NGINX server block using the <code>allow</code> and <code>deny</code> directives:</p>
+                    <div class="code-wrapper">
+                        <div class="code-header">nginx.conf <button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                        <pre><code>server {
+    listen 443 ssl http2;
+    server_name admin.intragate.dev;
+
+    ssl_certificate /etc/letsencrypt/live/admin.intragate.dev/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/admin.intragate.dev/privkey.pem;
+
+    location / {
+        # Strict IP Access restriction block
+        allow 192.168.1.0/24;    # Corporate office subnet
+        allow 203.0.113.50;      # Admin remote home static IP
+        deny all;                # Drop TCP connections from anywhere else
+
+        proxy_pass http://127.0.0.1:8585;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Environment Variables Section ────────────────────── -->
+        <section id="env-ref">
+            <h1>Environment Reference</h1>
+            <p>IntraGate enforces strict sanity checks on environment variables at start. The gateway immediately fails to start if any required variable is missing or insecure.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Variable Name</th>
+                        <th>Required</th>
+                        <th>Format & Example</th>
+                        <th>Purpose & Integrity Check</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>GATEWAY_SECRET_KEY</code></td>
+                        <td>Yes</td>
+                        <td>Min 32-char hex string<br><code>openssl rand -hex 32</code></td>
+                        <td>Used for session cookie signing, anti-CSRF token verification, and state parameter generation. Must be at least 32 characters long.</td>
+                    </tr>
+                    <tr>
+                        <td><code>GATEWAY_ENCRYPTION_KEY</code></td>
+                        <td>Yes</td>
+                        <td>32-byte URL-safe base64 key<br><code>python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"</code></td>
+                        <td>Used for symmetric encryption of sensitive credentials (e.g. Entra ID Client Secrets) and session tokens in PostgreSQL. Must be a valid Fernet key.</td>
+                    </tr>
+                    <tr>
+                        <td><code>POSTGRES_PASSWORD</code></td>
+                        <td>Yes</td>
+                        <td>Alphanumeric string (min 16 chars)</td>
+                        <td>Connection password for PostgreSQL database. Avoid simple strings.</td>
+                    </tr>
+                    <tr>
+                        <td><code>DATABASE_URL</code></td>
+                        <td>Yes</td>
+                        <td>SQLAlchemy connection string<br><code>postgresql+asyncpg://postgres:pwd@db:5432/db</code></td>
+                        <td>Database connection URL for SQLAlchemy. Uses asyncpg driver.</td>
+                    </tr>
+                    <tr>
+                        <td><code>TRUSTED_PROXIES</code></td>
+                        <td>No</td>
+                        <td>Comma-separated IPs<br><code>10.0.0.1,192.168.1.10</code></td>
+                        <td>Proxy IP addresses allowed to forward the <code>X-Forwarded-For</code> header. Unwhitelisted IPs trigger log warnings and are ignored to prevent IP spoofing.</td>
+                    </tr>
+                    <tr>
+                        <td><code>GATEWAY_DEV_MODE</code></td>
+                        <td>No</td>
+                        <td><code>true</code> / <code>false</code> (Default: <code>false</code>)</td>
+                        <td>Enables local SSO bypass using <code>?mock=true</code> query parameter during testing. MUST be false in production.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ── Session Management Section ──────────────────────── -->
+        <section id="sessions">
+            <h1>Session Management</h1>
+            <p>IntraGate features distributed, PostgreSQL-backed sessions instead of local memory stores. This architecture ensures high availability and horizontal scalability behind load balancers.</p>
+            
+            <h3>Token Encryption At Rest</h3>
+            <p>When a user completes SSO login, IntraGate receives an <code>access_token</code> and <code>id_token</code> from Entra ID. To minimize data leakage risk in the event of database compromise, these values are symmetrically encrypted via Fernet before persisting:</p>
+            <div class="code-wrapper">
+                <div class="code-header">Encryption Routine (app/session.py)</div>
+                <pre><code>def encrypt_tokens(user_dict: dict) -> dict:
+    d = dict(user_dict)
+    fernet = Fernet(GATEWAY_ENCRYPTION_KEY)
+    if d.get("access_token"):
+        d["access_token"] = fernet.encrypt(d["access_token"].encode()).decode()
+    if d.get("id_token"):
+        d["id_token"] = fernet.encrypt(d["id_token"].encode()).decode()
+    return d</code></pre>
+            </div>
+
+            <h3>Session Life Cycle & Purging</h3>
+            <p>A background clean-up task (<code>session_cleanup_worker</code>) runs periodically inside the main process loop. It deletes expired admin and user sessions from the PostgreSQL database using dynamic timeouts configured by the administrator:</p>
+            <ul>
+                <li><strong>Absolute Lifetime Check</strong>: Sessions are deleted if <code>created_at &lt; time.time() - session_lifetime_hours</code>.</li>
+                <li><strong>Inactivity Timeout Check</strong>: Sessions are invalidated if <code>last_active &lt; time.time() - session_timeout_minutes</code>.</li>
+            </ul>
+        </section>
+
+        <!-- ── Reverse Proxy Section ───────────────────────────── -->
+        <section id="proxy-rules">
+            <h1>Reverse Proxy Policy</h1>
+            <p>The gateway serves as a secure shield between public networks and downstream microservices. It implements strict validation to block HTTP smuggling, header injection, and cookie leakages.</p>
+            
+            <h3>Case-Insensitive Header Stripping</h3>
+            <p>To prevent malicious clients from attempting to bypass gateway-level authentication by supplying pre-forged identity headers, IntraGate strips all headers starting with <code>X-Gateway-User-</code> case-insensitively before proxying the request downstream:</p>
+            <div class="code-wrapper">
+                <div class="code-header">Header Stripping (app/proxy.py)</div>
+                <pre><code># Strip client-supplied user information headers case-insensitively
+headers_to_remove = [k for k in client_headers.keys() if k.lower().startswith("x-gateway-user-")]
+for k in headers_to_remove:
+    del client_headers[k]</code></pre>
+            </div>
+
+            <h3>Cookie Isolation</h3>
+            <p>To prevent upstream applications from gaining access to the main gateway session token (<code>intragate_sid</code>), the proxy engine inspects the forwarded <code>Cookie</code> header and deletes gateway-related cookies before sending the request upstream.</p>
+
+            <h3>Proxy Schemes & TLS Verification</h3>
+            <p>For each registered downstream application, the administrator can configure whether SSL certificates should be verified (<code>tls_verify</code>). This supports local apps using self-signed development certificates without compromising global routing safety.</p>
+        </section>
+
+        <!-- ── Admin Security Section ──────────────────────────── -->
+        <section id="admin-sec">
+            <h1>Admin Security Controls</h1>
+            <p>Because the Admin Panel controls application registries and routing schemes, it has been hardened with advanced defense mechanisms.</p>
+
+            <h3>Brute-Force & Rate-Limiting Lockout</h3>
+            <p>Local admin logins are protected by an IP-based lockout system. Failed logins are recorded in the database, triggering exponential delays:</p>
+            <ul>
+                <li><strong>Lockout Threshold</strong>: After 5 failed attempts, the IP is locked out.</li>
+                <li><strong>Response Code</strong>: Locked-out IPs receive <code>429 Too Many Requests</code> with an active countdown.</li>
+                <li><strong>Lockout Duration</strong>: Starts at 15 minutes and scales exponentially on subsequent failures.</li>
+            </ul>
+
+            <h3>Upload Validation & Magic Bytes</h3>
+            <p>When uploading a corporate logo in Portal Settings, the panel executes strict server-side validation to prevent shell uploads (e.g. SVG/HTML payloads) disguised as images:</p>
+            <ol>
+                <li><strong>File Size & Name</strong>: Size is restricted, and file extension is normalized.</li>
+                <li><strong>Dimensions Check</strong>: Image width and height are read using PIL and verified to be &le; 400x400 pixels.</li>
+                <li><strong>Magic Bytes Integrity</strong>: The file content is opened and verified to ensure it is a valid, un-corrupted binary image of type PNG, JPEG, or GIF.</li>
+            </ol>
+        </section>
+
+        <!-- ── Admin Features Section ──────────────────────────── -->
+        <section id="admin-features">
+            <h1>Admin Features & Settings Reference</h1>
+            <p>This section provides a granular, field-by-field breakdown of every setting, configuration panel, and security control inside the IntraGate Admin User Interface.</p>
+
+            <h2>1. Initial Setup Wizard</h2>
+            <p>When the application is booted for the first time with an empty PostgreSQL database, the gateway enters <strong>Setup Mode</strong>. The main portal routes will redirect to the setup page. The admin must configure the initial credentials:</p>
+            <ul>
+                <li><strong>Administrator Username</strong>: The unique username used to log in to the admin panel. Avoid simple terms like "admin".</li>
+                <li><strong>Administrator Password</strong>: Must be at least 8 characters long. The password is hashed on the server side using the industry-standard <code>bcrypt</code> algorithm with 12 salt rounds before being written to the database.</li>
+            </ul>
+            <p>Once the administrator account is created, Setup Mode is deactivated and the portal transitions to production mode, requiring Entra ID login for general users.</p>
+
+            <h2>2. Two-Factor Authentication (MFA / TOTP)</h2>
+            <p>To secure the admin panel against credential theft, admins can enable Multi-Factor Authentication based on RFC 6238 Time-Based One-Time Passwords (TOTP):</p>
+            <ul>
+                <li><strong>Secret Generation</strong>: When setup is initiated, the server generates a cryptographically secure 32-character base32 secret key.</li>
+                <li><strong>QR Code Enrollment</strong>: The secret is encoded into a URI (e.g. <code>otpauth://totp/IntraGate:username?secret=...</code>) and presented as a high-contrast QR code on the dashboard. Scan this using Google Authenticator, Microsoft Authenticator, Aegis, Bitwarden, or any compatible client.</li>
+                <li><strong>Verification & Activation</strong>: To prevent lockout due to misconfiguration, the admin must enter their login password and the current 6-digit TOTP token. The server verifies the token before setting <code>totp_enabled = True</code> in the database.</li>
+                <li><strong>Deactivation</strong>: Can only be disabled by providing the admin's password and a valid current TOTP token.</li>
+            </ul>
+
+            <h2>3. Application Registry Configuration</h2>
+            <p>The Application Registry defines the downstream web applications protected by IntraGate. To register an application, click <strong>+ Add Application</strong> and configure the following parameters:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Setting / Field</th>
+                        <th>Format & Constraints</th>
+                        <th>Description & Behavior</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Application Name</strong></td>
+                        <td>Alphanumeric text (1 to 100 characters)</td>
+                        <td>The user-friendly name displayed on the portal home screen landing cards (e.g., <code>Grafana Analytics</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Route Slug</strong></td>
+                        <td>Lowercase, hyphens, alphanumeric (min 1 char)<br>Regex: <code>^[a-z0-9]+(-[a-z0-9]+)*$</code></td>
+                        <td>The unique URL path prefix under which the application is served. For example, a slug of <code>grafana</code> routes all public traffic under <code>https://intragate.dev/app/grafana</code> to the target service. If left empty, it is generated automatically from the name.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Upstream URL</strong></td>
+                        <td>Valid URL string (HTTP/HTTPS scheme)<br>Example: <code>http://10.0.5.12:3000</code></td>
+                        <td>The target address of the internal web application. Can specify hostname, internal DNS names, or IP addresses with custom ports.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Allowed Group Object ID</strong></td>
+                        <td>Valid UUID format (36 characters)<br>Example: <code>ba805f21-2393-4593-92f2-91cfb9178718</code></td>
+                        <td>The exact Object ID of the Microsoft Entra ID security group whose members are authorized to access this application. Users who do not belong to this group will be denied access and shown a clean 403 authorization screen.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Verify TLS Certificates</strong></td>
+                        <td>Boolean toggle (Enabled / Disabled)</td>
+                        <td>
+                            <strong>Enabled</strong>: The gateway validates the upstream SSL/TLS certificate against the host system's trust store. Must be active for production traffic to prevent man-in-the-middle attacks.<br>
+                            <strong>Disabled</strong>: Bypasses TLS chain validation. Intended for development/staging nodes using self-signed or expired internal certificates.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>4. Portal Branding & Theme Settings</h2>
+            <p>This panel allows tailoring the user-facing landing portal to match corporate brand guidelines. All style parameters undergo strict input validation:</p>
+            <ul>
+                <li><strong>Organization Name</strong>: Displays in the main page header and browser tab title.</li>
+                <li><strong>Subtext / Description</strong>: Secondary text block displaying welcome messages or compliance notices to users.</li>
+                <li><strong>Footer Copyright Text</strong>: Text block at the bottom of the landing dashboard.</li>
+                <li><strong>Primary & Accent Hex Colors</strong>: Must be valid 6-character hex color codes starting with a hash (e.g., <code>#1F4E79</code>). Verified on save against the regex pattern <code>^#[0-9A-Fa-f]{6}$</code> to prevent injection attacks.</li>
+                <li><strong>Custom Logo Upload</strong>:
+                    <ul>
+                        <li><strong>Dimensions Constraint</strong>: The uploaded image must be less than or equal to <strong>400x400 pixels</strong>. Read and verified using the Pillow library.</li>
+                        <li><strong>Safe Formats</strong>: Must have a file extension of <code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, or <code>.gif</code>.</li>
+                        <li><strong>Magic Bytes Validation</strong>: The server opens the raw binary stream and reads the file headers to guarantee the image's binary integrity. Executable code or scripts hidden inside the image file are rejected immediately.</li>
+                        <li><strong>Serving Scheme</strong>: Custom logo files are served securely via a custom endpoint <code>/uploads/{filename}</code> that returns the file with <code>Content-Security-Policy: default-src 'none'</code> and <code>X-Content-Type-Options: nosniff</code> headers, mitigating script execution or HTML injection in uploaded media.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h2>5. Audit Logging & Report Exports</h2>
+            <p>All sensitive operations within the IntraGate engine are logged to the PostgreSQL database for security compliance and post-incident forensic investigation. The logs can be searched, filtered, and exported:</p>
+            <ul>
+                <li><strong>Logged Event Types</strong>:
+                    <ul>
+                        <li><code>login</code>: Successful Entra ID authentication and local admin logons.</li>
+                        <li><code>login_failed</code>: Failed local admin attempts, including invalid username, password, or TOTP code.</li>
+                        <li><code>lockout</code>: Source IP or username brute-force lockout events.</li>
+                        <li><code>logout</code>: Explicit user and administrator logouts.</li>
+                        <li><code>session_cleanup</code>: Background execution of the session pruning routine.</li>
+                        <li><code>config_update</code>: Updates to Entra ID, portal settings, or registry entries.</li>
+                    </ul>
+                </li>
+                <li><strong>CSV Export</strong>: Downloads a full comma-separated file of all filtered log records. Suitable for ingestion into SIEM tools like Splunk or Elastic.</li>
+                <li><strong>PDF Export</strong>: Generates an executive security report PDF containing a stylized table of audit logs, timestamps, user identifiers, IP addresses, and actions.</li>
+            </ul>
+        </section>
+
+        <!-- ── Entra ID SSO Section ────────────────────────────── -->
+        <section id="entra-setup">
+            <h1>Entra ID SSO Setup</h1>
+            <p>This section provides a step-by-step tutorial on registering IntraGate inside the Microsoft Entra ID (formerly Azure Active Directory) Portal to configure Single Sign-On.</p>
+            
+            <h2>Step 1: Create App Registration</h2>
+            <ol>
+                <li>Log in to the <a href="https://portal.azure.com" target="_blank" style="color:var(--primary)">Azure Portal</a> as an Application Administrator or Global Administrator.</li>
+                <li>Search for and select <strong>Microsoft Entra ID</strong> from the services list.</li>
+                <li>In the left-hand navigation pane, select <strong>App registrations</strong> and click <strong>+ New registration</strong>.</li>
+                <li>Configure the registration fields as follows:
+                    <ul>
+                        <li><strong>Name</strong>: Input a descriptive name (e.g., <code>IntraGate SSO Gateway</code>).</li>
+                        <li><strong>Supported account types</strong>: Choose <strong>Accounts in this organizational directory only (Single tenant)</strong>.</li>
+                        <li><strong>Redirect URI</strong>: In the dropdown, select <strong>Web</strong> and input your exact gateway callback endpoint:<br>
+                        <code>https://your-portal-domain.com/auth/callback</code> (Ensure this uses HTTPS in production).</li>
+                    </ul>
+                </li>
+                <li>Click <strong>Register</strong>.</li>
+            </ol>
+
+            <h2>Step 2: Enable ID Token Flow</h2>
+            <ol>
+                <li>Under the registered app menu, select <strong>Authentication</strong> (under the *Manage* subgroup).</li>
+                <li>Scroll down to the <strong>Implicit grant and hybrid flows</strong> section.</li>
+                <li>Check the box for <strong>ID tokens (used for implicit and hybrid flows)</strong>. <br>
+                    <span style="color:var(--warning); font-size: 14px;"><strong>Note:</strong> This is required by the OIDC validation middleware to authenticate the user profile signature securely.</span>
+                </li>
+                <li>Click <strong>Save</strong> at the top of the pane.</li>
+            </ol>
+
+            <h2>Step 3: Generate Client Secret</h2>
+            <ol>
+                <li>Navigate to <strong>Certificates & secrets</strong> -> <strong>Client secrets</strong> tab in the left-hand menu.</li>
+                <li>Click <strong>+ New client secret</strong>.</li>
+                <li>Provide a description (e.g. <code>IntraGate Production Secret</code>) and choose an expiration period (e.g. 12 months).</li>
+                <li>Click <strong>Add</strong>.</li>
+                <li><strong style="color:var(--danger)">Important:</strong> Copy the string in the <strong>Value</strong> column immediately. This value is hidden forever after navigating away. (Do *not* copy the Secret ID).</li>
+            </ol>
+
+            <h2>Step 4: Grant Microsoft Graph API Permissions</h2>
+            <ol>
+                <li>Navigate to <strong>API permissions</strong> in the left pane.</li>
+                <li>Under *Configured permissions*, click <strong>+ Add a permission</strong> and select <strong>Microsoft Graph</strong>.</li>
+                <li>Choose <strong>Delegated permissions</strong>.</li>
+                <li>Search and select the following OIDC scopes:
+                    <ul>
+                        <li><code>openid</code>: Grants access to sign users in.</li>
+                        <li><code>profile</code>: Grants access to read user names.</li>
+                        <li><code>email</code>: Grants access to read user email addresses.</li>
+                        <li><code>User.Read</code>: Standard permission to read the signed-in user's profile and group memberships.</li>
+                    </ul>
+                </li>
+                <li>Click <strong>Add permissions</strong>.</li>
+                <li>(Recommended) If logged in as Tenant Administrator, click <strong>Grant admin consent for [Company]</strong> to prevent users from seeing consent prompts.</li>
+            </ol>
+
+            <h2>Step 5: Configure Security Groups Claim</h2>
+            <p>IntraGate authorizes user access based on group membership. To send the security group IDs in the token, you must configure a groups claim.</p>
+            <ol>
+                <li>In your application registration page, select <strong>Token configuration</strong> from the left-hand navigation pane.</li>
+                <li>Click <strong>+ Add groups claim</strong>.</li>
+                <li>In the popup drawer, configure the options:
+                    <ul>
+                        <li>Select <strong>Security groups</strong> (this covers standard security groups).</li>
+                        <li>(Optional) You can also select <strong>Directory roles</strong> and <strong>All groups</strong> if required by your access control configuration.</li>
+                    </ul>
+                </li>
+                <li>Expand the dropdown for <strong>Customize token properties by type</strong> (Web, ID, Access):
+                    <ul>
+                        <li>Select <strong>Group ID</strong> for ID and Access tokens. This ensures the raw Azure Object ID (UUID format, e.g. <code>ae8dbe8c-f030-4f5c-8f56-060bccd6ace4</code>) is emitted, which corresponds directly to the configured <code>Group ID</code> in IntraGate.</li>
+                    </ul>
+                </li>
+                <li>Click <strong>Add</strong>.</li>
+            </ol>
+
+            <div class="callout info">
+                <div class="callout-title">Understanding Group Overage Claims & API Fallback</div>
+                <p>When a user belongs to many groups, the list of group IDs can exceed the token size limit (typically more than 200 groups for SAML, or 6 groups for implicit JWT tokens). Under these circumstances, Microsoft Entra ID omits the group IDs from the token and adds an overage claim:</p>
+                <pre><code>"_claim_names": {"groups": "src1"}</code></pre>
+                <p>IntraGate is engineered to handle group overage gracefully. When an overage claim is detected in the claims payload, the gateway automatically connects to the Microsoft Graph API using the endpoint <code>https://graph.microsoft.com/v1.0/me/memberOf</code> to retrieve the user's transitive group memberships. This lookup runs asynchronously and transparently to the user, but requires the <strong>User.Read</strong> delegated permission to be consented in Step 4.</p>
+            </div>
+
+            <h2>Step 6: Configure Gateway Settings</h2>
+            <p>From the App registration's **Overview** page, copy the following values to configure in the IntraGate admin portal:</p>
+            <ul>
+                <li><strong>Application (client) ID</strong> (UUID format)</li>
+                <li><strong>Directory (tenant) ID</strong> (UUID format)</li>
+            </ul>
+            <p>Log in to the IntraGate Admin Panel (via localhost SSH tunnel), go to **Entra ID Configuration**, and input these values alongside the Client Secret and Redirect URI. Once saved, these parameters are encrypted using <code>GATEWAY_ENCRYPTION_KEY</code> and persisted in the database.</p>
+        </section>
+
+        <!-- ── Troubleshooting Section ─────────────────────────── -->
+        <section id="troubleshooting">
+            <h1>Troubleshooting & FAQ</h1>
+            
+            <div class="callout danger">
+                <div class="callout-title">Database connection fails at startup</div>
+                <strong>Problem:</strong> Gateway container fails to start, displaying database connection errors.<br>
+                <strong>Solution:</strong> The PostgreSQL database container might take a few seconds to initialize on the first run. The gateway will automatically retry connection 5 times. Ensure that <code>POSTGRES_PASSWORD</code> matches in both the postgres container definition and the database connection URL.
+            </div>
+
+            <div class="callout warning">
+                <div class="callout-title">IP Address Spoofing Audit Warn</div>
+                <strong>Problem:</strong> Log messages indicate audit entries recording IP mismatches.<br>
+                <strong>Solution:</strong> Ensure that your upstream load balancer (e.g. Traefik, NGINX) is listed in the <code>TRUSTED_PROXIES</code> environment variable. If not listed, IntraGate will ignore the <code>X-Forwarded-For</code> header to prevent IP spoofing attacks.
+            </div>
+
+            <h3>Common FAQ</h3>
+            <p><strong>Q: Why can't I reach the Admin Panel on my public IP?</strong><br>
+            A: For security reasons, the admin panel binds strictly to <code>127.0.0.1:8585</code>. You must create an SSH tunnel (e.g. <code>ssh -L 8585:127.0.0.1:8585 user@server</code>) to access the panel locally on your workstation.</p>
+
+            <p><strong>Q: How do I rotate session signing keys?</strong><br>
+            A: Generate a new key and update the <code>GATEWAY_SECRET_KEY</code> variable. Note that rotating this key will immediately invalidate all existing user sessions, prompting users to re-authenticate. Rotating this key does NOT affect encrypted values in the database, which rely on <code>GATEWAY_ENCRYPTION_KEY</code>.</p>
+        </section>
+
+    </main>
+
+    <!-- ── Interactive JavaScript ────────────────────────────── -->
+    <script>
+        // Tab switching logic
+        function switchTab(event, tabId) {
+            const container = event.target.closest('.tab-container');
+            
+            // Remove active class from buttons
+            container.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // Remove active class from contents
+            container.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active to current button
+            event.target.classList.add('active');
+            // Show target content
+            container.querySelector(`#${tabId}`).classList.add('active');
+        }
+
+        // Copy code button logic
+        function copyCode(btn) {
+            const pre = btn.closest('.code-wrapper').querySelector('pre code');
+            navigator.clipboard.writeText(pre.innerText).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.style.color = '#10b981';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+
+        // Document search filter
+        function filterDocs() {
+            const query = document.getElementById('docSearch').value.toLowerCase();
+            const sections = document.querySelectorAll('main section');
+            
+            sections.forEach(section => {
+                const text = section.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+
+        // Highlight active sidebar navigation link on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSectionId = 'intro';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) {
+                    currentSectionId = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === `#${currentSectionId}`) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

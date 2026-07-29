@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Secure Gateway{% endblock %}</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Gateway Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/style.css">
+    {% if portal %}
+    <style>
+        :root {
+            --primary-color: {{ portal.primary_color | default('#1f6b9a') }};
+            --accent-color: {{ portal.accent_color | default('#9b59b6') }};
+        }
+        .portal-intro h1 .highlight {
+            background: linear-gradient(90deg, {{ portal.primary_color | default('#1f6b9a') }}, {{ portal.accent_color | default('#9b59b6') }});
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+    </style>
+    {% endif %}
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="glow-bg-container">
+        <div class="glow-bg"></div>
+        <div class="glow-bg-secondary"></div>
+    </div>
+    
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo-area">
+                {% if portal and portal.logo_mode == 'file' and portal.logo_file_path %}
+                    <img src="{{ portal.logo_file_path }}" alt="Logo" style="height:32px;border-radius:4px;margin-right:8px">
+                {% elif portal and portal.logo_mode == 'url' and portal.logo_url %}
+                    <img src="{{ portal.logo_url }}" alt="Logo" style="height:32px;border-radius:4px;margin-right:8px">
+                {% endif %}
+                <span class="logo-text">
+                    {{ portal.org_name | default('INTRAGATE') if portal else 'INTRAGATE' }}
+                    {% if portal and portal.org_subtext %}
+                        <span class="logo-subtext">{{ portal.org_subtext }}</span>
+                    {% endif %}
+                </span>
+                <span class="badge">SECURE GATEWAY</span>
+            </div>
+            {% if user %}
+            <div class="user-control">
+                <div class="user-profile-badge">
+                    <div class="user-avatar-circle">
+                        {{ user.name[0] | upper if user.name else 'U' }}
+                    </div>
+                    <div class="user-meta">
+                        <span class="user-name">{{ user.name }}</span>
+                        <span class="user-email">{{ user.email }}</span>
+                    </div>
+                </div>
+                <a href="/auth/logout" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <p>© 2026 IntraGate. All rights reserved. | Secured by Active Directory SSO</p>
+    </footer>
+</body>
+</html>

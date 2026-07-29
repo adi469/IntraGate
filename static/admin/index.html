@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | IntraGate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/admin/admin.css">
+</head>
+<body>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ═══ LOGIN / SETUP ═══ -->
+    <div id="loginView" class="login-wrapper">
+        <div class="login-card">
+            <div style="text-align:center"><span class="brand-badge">ADMIN PANEL</span></div>
+            <h1>IntraGate</h1>
+            <p class="subtitle" id="loginSubtitle">Sign in to manage your gateway</p>
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="loginUser">Username</label>
+                    <input type="text" id="loginUser" placeholder="admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPass">Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••" required>
+                </div>
+                <div class="form-group" id="totpGroup" style="display:none">
+                    <label for="loginTotp">Authenticator Code</label>
+                    <input type="text" id="loginTotp" placeholder="6-digit code" maxlength="6" autocomplete="one-time-code">
+                </div>
+                <div class="form-group" id="setupConfirmGroup" style="display:none">
+                    <label for="loginPassConfirm">Confirm Password</label>
+                    <input type="password" id="loginPassConfirm" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                    <i class="fa-solid fa-right-to-bracket"></i> <span id="loginBtnText">Sign In</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══ MAIN SHELL ═══ -->
+    <div id="appShell" class="shell">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="mobile-brand">
+                <h2>IntraGate</h2>
+                <span class="badge">ADMIN</span>
+            </div>
+            <div style="width: 32px;"></div>
+        </div>
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <h2>IntraGate</h2>
+                <span class="badge">ADMIN</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+                <a class="nav-item" data-tab="entra"><i class="fa-brands fa-microsoft"></i> Entra ID</a>
+                <a class="nav-item" data-tab="apps"><i class="fa-solid fa-cubes"></i> Applications</a>
+                <a class="nav-item" data-tab="portal"><i class="fa-solid fa-palette"></i> Portal</a>
+                <a class="nav-item" data-tab="security"><i class="fa-solid fa-shield-halved"></i> Security</a>
+                <a class="nav-item" data-tab="logs"><i class="fa-solid fa-list-check"></i> Audit Logs</a>
+                <a class="nav-item" data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 4px 12px; margin-bottom: 0;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="avatar" id="userAvatar">A</div>
+                        <span id="userLabel">admin</span>
+                    </div>
+                    <button id="logoutBtn" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- ── Dashboard ── -->
+            <div class="tab-panel active" id="tab-dashboard">
+                <div class="content-header">
+                    <h1>Dashboard</h1>
+                    <p>Gateway overview and system status</p>
+                </div>
+                <div class="stats-grid" id="statsGrid"></div>
+                <div class="card">
+                    <div class="card-title"><i class="fa-solid fa-circle-info"></i> Quick Actions</div>
+                    <div class="btn-group" style="margin-top:0">
+                        <button class="btn btn-outline btn-sm" data-tab-target="entra"><i class="fa-brands fa-microsoft"></i> Configure Entra ID</button>
+                        <button class="btn btn-outline btn-sm" data-tab-target="apps"><i class="fa-solid fa-plus"></i> Add Application</button>
+                        <button class="btn btn-outline btn-sm" data-tab-target="portal"><i class="fa-solid fa-palette"></i> Customize Portal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Entra ID ── -->
+            <div class="tab-panel" id="tab-entra">
+                <div class="content-header">
+                    <h1>Microsoft Entra ID</h1>
+                    <p>Configure your Azure AD / Entra ID app registration</p>
+                </div>
+                <div class="card" style="max-width:700px">
+                    <div class="card-title"><i class="fa-brands fa-microsoft"></i> Entra ID Credentials</div>
+                    <form id="entraForm">
+                        <div class="form-group">
+                            <label>Tenant ID</label>
+                            <input type="text" id="entraTenant" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                            <div class="hint">Found in Azure Portal → Entra ID → Overview</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Client ID (Application ID)</label>
+                            <input type="text" id="entraClient" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label>Client Secret</label>
+                            <input type="password" id="entraSecret" placeholder="Leave blank to keep existing">
+                            <div class="hint">Created in App Registration → Certificates & secrets</div>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                            <button type="button" class="btn btn-success" id="testEntraBtn"><i class="fa-solid fa-plug"></i> Test Connection</button>
+                        </div>
+                    </form>
+                    <div id="entraStatus" style="margin-top:1rem"></div>
+                    <div id="testResults" style="margin-top:1rem"></div>
+                </div>
+            </div>
+
+            <!-- ── Applications ── -->
+            <div class="tab-panel" id="tab-apps">
+                <div class="content-header">
+                    <h1>Applications</h1>
+                    <p>Manage applications accessible through the gateway</p>
+                </div>
+                <div style="margin-bottom:1rem">
+                    <button class="btn btn-primary" id="addAppBtn"><i class="fa-solid fa-plus"></i> Add Application</button>
+                </div>
+                <div class="app-cards" id="appsList"></div>
+            </div>
+
+            <!-- ── Portal ── -->
+            <div class="tab-panel" id="tab-portal">
+                <div class="content-header">
+                    <h1>Portal Customization</h1>
+                    <p>Customize the user-facing portal appearance</p>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+                    <div class="card">
+                        <div class="card-title"><i class="fa-solid fa-building"></i> Branding</div>
+                        <form id="portalForm">
+                            <div class="form-group">
+                                <label>Organization Name</label>
+                                <input type="text" id="portalOrgName" placeholder="My Organization">
+                            </div>
+                            <div class="form-group">
+                                <label>Subtitle</label>
+                                <input type="text" id="portalOrgSub" placeholder="ENGINEERING">
+                            </div>
+                            <div class="form-group">
+                                <label>Logo</label>
+                                <select id="portalLogoMode">
+                                    <option value="none">No Logo</option>
+                                    <option value="file">Upload File</option>
+                                    <option value="url">External URL</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="logoFileGroup" style="display:none">
+                                <label>Logo File (max 5MB)</label>
+                                <input type="file" id="portalLogoFile" accept="image/*">
+                            </div>
+                            <div class="form-group" id="logoUrlGroup" style="display:none">
+                                <label>Logo URL</label>
+                                <input type="url" id="portalLogoUrl" placeholder="https://example.com/logo.png">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Primary Color</label>
+                                    <input type="color" id="portalPrimary" value="#1f6b9a">
+                                </div>
+                                <div class="form-group">
+                                    <label>Accent Color</label>
+                                    <input type="color" id="portalAccent" value="#9b59b6">
+                                </div>
+                            </div>
+                            <input type="hidden" id="portalFooter" value="© 2026 IntraGate. All rights reserved. | Secured by Active Directory SSO">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="fa-solid fa-eye"></i> Live Preview</div>
+                        <div class="portal-preview" id="portalPreview">
+                            <div class="preview-header">
+                                <img class="preview-logo" id="previewLogo" src="" style="display:none">
+                                <span class="preview-org" id="previewOrg">My Organization</span>
+                            </div>
+                            <p style="color:var(--text-secondary);font-size:0.85rem">Welcome back, <strong>User</strong></p>
+                            <p style="color:var(--text-muted);font-size:0.8rem;margin-top:8px">Select an authorized application below…</p>
+                            <div class="preview-footer" id="previewFooter">© 2026 All rights reserved.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Settings ── -->
+            <div class="tab-panel" id="tab-settings">
+                <div class="content-header">
+                    <h1>Gateway Settings</h1>
+                    <p>Configure session behavior and gateway parameters</p>
+                </div>
+                <div class="card" style="max-width:600px">
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label>Gateway Base URL</label>
+                            <input type="url" id="settingsBaseUrl" placeholder="https://gateway.example.com">
+                            <div class="hint">The public URL users access (used for OAuth redirect)</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Session Lifetime (hours)</label>
+                            <input type="number" id="settingsLifetime" min="1" max="720" value="12">
+                            <div class="hint">Maximum session duration regardless of activity (1-720 hours)</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Inactivity Timeout (minutes)</label>
+                            <input type="number" id="settingsTimeout" min="5" max="480" value="60">
+                            <div class="hint">Session expires if user is inactive for this duration (5-480 min)</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ── Security ── -->
+            <div class="tab-panel" id="tab-security">
+                <div class="content-header">
+                    <h1>Security</h1>
+                    <p>Manage TOTP two-factor authentication and admin password</p>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;max-width:900px">
+                    <div class="card">
+                        <div class="card-title"><i class="fa-solid fa-mobile-screen"></i> Two-Factor Auth (TOTP)</div>
+                        <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:1rem">
+                            Use Google Authenticator, Authy, or any TOTP app.
+                        </p>
+                        <div id="totpStatus"></div>
+                        <div id="totpSetupArea"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title"><i class="fa-solid fa-key"></i> Change Password</div>
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" id="oldPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" id="newPassword" required>
+                                <div class="password-strength-container" style="margin-top: 8px;">
+                                    <div class="strength-meter" style="height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin-bottom: 6px;">
+                                        <div class="strength-bar" id="strengthBar" style="height: 100%; width: 0%; transition: var(--transition); background: var(--danger);"></div>
+                                    </div>
+                                    <div class="strength-label" id="strengthLabel" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 8px;">Strength: Empty</div>
+                                    <ul class="strength-checklist" style="list-style: none; padding-left: 0; margin-bottom: 0;">
+                                        <li id="req-length" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 4px;"><i class="fa-regular fa-circle"></i> At least 8 characters</li>
+                                        <li id="req-case" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 4px;"><i class="fa-regular fa-circle"></i> Mixed case (A-Z & a-z)</li>
+                                        <li id="req-number" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 4px;"><i class="fa-regular fa-circle"></i> At least one number</li>
+                                        <li id="req-special" style="font-size: 0.75rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-top: 4px;"><i class="fa-regular fa-circle"></i> One special character</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" id="confirmPassword" required>
+                                <div class="confirm-message" id="confirmMessage" style="font-size: 0.75rem; margin-top: 6px;"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm" id="submitPasswordBtn" disabled><i class="fa-solid fa-key"></i> Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Audit Logs ── -->
+            <div class="tab-panel" id="tab-logs">
+                <div class="content-header">
+                    <h1>Security Audit Logs</h1>
+                    <p>Monitor user activity, application access frequency, and gateway security modifications</p>
+                </div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                            <label for="filterEmail">Search User Email</label>
+                            <input type="text" id="filterEmail" placeholder="Search by email..." style="margin-bottom: 0;">
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 180px; margin-bottom: 0;">
+                            <label for="filterEvent">Event Type</label>
+                            <select id="filterEvent" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px; height: 38px; width: 100%;">
+                                <option value="all" style="background:#111">All Events</option>
+                                <option value="login" style="background:#111">User Login</option>
+                                <option value="logout" style="background:#111">User Logout</option>
+                                <option value="app_access" style="background:#111">App Access</option>
+                                <option value="access_denied" style="background:#111">Access Denied</option>
+                                <option value="admin_login" style="background:#111">Admin Login</option>
+                                <option value="admin_logout" style="background:#111">Admin Logout</option>
+                                <option value="settings_change" style="background:#111">Settings Change</option>
+                                <option value="password_change" style="background:#111">Password Change</option>
+                                <option value="totp_enable" style="background:#111">TOTP Enable</option>
+                                <option value="totp_disable" style="background:#111">TOTP Disable</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary" id="btnFilterLogs" style="height: 38px;"><i class="fa-solid fa-magnifying-glass"></i> Filter</button>
+                            <button class="btn btn-outline" id="btnClearLogs" style="height: 38px;" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></button>
+                        </div>
+                        <div style="margin-left: auto; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-success" id="btnExportCSV" style="height: 38px;"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <button class="btn btn-danger" id="btnExportPDF" style="height: 38px;"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 170px;">Date & Time</th>
+                                    <th style="width: 130px;">Event</th>
+                                    <th style="width: 220px;">User Email</th>
+                                    <th style="width: 140px;">IP Address</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--border); background: rgba(255,255,255,0.01);">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);" id="logsPaginationInfo">
+                            Showing 0 to 0 of 0 entries
+                        </div>
+                        <div class="btn-group" style="margin: 0;">
+                            <button class="btn btn-outline btn-sm" id="btnPrevLogs" disabled><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                            <button class="btn btn-outline btn-sm" id="btnNextLogs" disabled>Next <i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══ APP MODAL ═══ -->
+    <div class="modal-overlay" id="appModal">
+        <div class="modal">
+            <h2 id="appModalTitle">Add Application</h2>
+            <form id="appForm">
+                <input type="hidden" id="appEditSlug">
+                <div class="form-group">
+                    <label>Application Name</label>
+                    <input type="text" id="appName" required placeholder="My App">
+                </div>
+                <div class="form-group">
+                    <label>Slug (URL path)</label>
+                    <input type="text" id="appSlug" placeholder="auto-generated from name">
+                    <div class="hint">Lowercase letters, numbers, hyphens only</div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="appDesc" rows="2" placeholder="Brief description of the application"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Icon (emoji)</label>
+                    <input type="text" id="appIcon" value="🔧" maxlength="4">
+                </div>
+                <div class="form-group">
+                    <label>Entra Security Group ID</label>
+                    <input type="text" id="appGroupId" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+                    <div class="hint">Object ID of the Entra security group that has access</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 0 0 100px;">
+                        <label>Scheme</label>
+                        <select id="appUpstreamScheme" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 8px; height: 38px;">
+                            <option value="http" style="background:#111">http://</option>
+                            <option value="https" style="background:#111">https://</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Upstream IP / Hostname</label>
+                        <input type="text" id="appUpstreamIp" required placeholder="127.0.0.1">
+                    </div>
+                    <div class="form-group" style="flex: 0 0 120px;">
+                        <label>Upstream Port</label>
+                        <input type="number" id="appUpstreamPort" required min="1" max="65535" placeholder="8080">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Card Color</label>
+                        <input type="color" id="appColor" value="#1F4E79">
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;padding-bottom:0">
+                        <label class="toggle">
+                            <input type="checkbox" id="appEnabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:0.85rem">Enabled</span>
+                    </div>
+                    <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;padding-bottom:0">
+                        <label class="toggle">
+                            <input type="checkbox" id="appTlsVerify" checked>
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-size:0.85rem">TLS Verify</span>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Save</button>
+                    <button type="button" class="btn btn-outline" id="btnCancelModal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/admin/admin.js" nonce="{{ nonce }}"></script>
+</body>
+</html>

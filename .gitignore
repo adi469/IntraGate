@@ -1,0 +1,38 @@
+# Local configuration and credentials
+.env
+.env.local
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Traefik local data
+traefik/letsencrypt/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dynamic data and uploads
+data/
+data/uploads/
+.agents/
+
+# IDE / Editor caches
+.mypy_cache/
+.ruff_cache/
+
+# Agent files
+skills-lock.json
+
+# Zip files
+*.zip
+logs.txt
+*.log
