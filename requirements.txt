@@ -14,5 +14,5 @@ pyotp==2.10.0
 qrcode[pil]==8.2
 aiofiles==25.1.0
 reportlab==5.0.0
-pillow==12.2.0
+pillow==12.3.0
 aiosqlite==0.22.1
